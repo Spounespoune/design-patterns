@@ -17,3 +17,4 @@
 ###>IDE directories and files ###
 /.idea
 ###>IDE directories and files ###
+/tests/DesignPattern/TemplateMethod/GenerateFile/
