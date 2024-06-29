@@ -2,11 +2,15 @@
 
 namespace App\Tests\DesignPattern\TemplateMethod;
 
-use App\DesignPattern\TemplateMethod\DataExportManager;
+use App\DesignPattern\TemplateMethod\DataExportToCsv;
+use App\DesignPattern\TemplateMethod\DataExportToXml;
+use App\DesignPattern\TemplateMethod\Storage\FileStorageBasic;
+use App\DesignPattern\TemplateMethod\Storage\FileStorageCsv;
 use PHPUnit\Framework\TestCase;
 use TypeError;
 
-class DataExportManagerTest extends TestCase
+
+class DataExporterTest extends TestCase
 {
     private array $rawData = [
         ['id' => 1, 'name' => 'John Doe', 'age' =>'30'],
@@ -20,10 +24,12 @@ class DataExportManagerTest extends TestCase
         $directory = __DIR__ . '/GenerateFile/';
         $filename = 'test.csv';
         $this->cleanFile($directory, $filename);
-        $dataExportManager = new DataExportManager($this->rawData, $directory, $filename);
-        $dataExportManager->generateFile($dataExportManager::CSV_FORMAT);
+        $dataExportManager = new DataExportToCsv($this->rawData, new FileStorageCsv($directory, $filename));
+        $dataExportManager
+            ->generateExport()
+        ;
 
-        $this->assertFileEquals($fileExpected,  $dataExportManager->getFilenameCompletPath());
+        $this->assertFileEquals($fileExpected,  $directory . $filename);
     }
 
     public function test_can_export_data_in_xml()
@@ -32,10 +38,10 @@ class DataExportManagerTest extends TestCase
         $directory = __DIR__ . '/GenerateFile/';
         $filename = 'test.xml';
         $this->cleanFile($directory, $filename);
-        $dataExportManager = new DataExportManager($this->rawData, $directory, $filename);
-        $dataExportManager->generateFile($dataExportManager::XML_FORMAT);
+        $dataExportManager = new DataExportToXml($this->rawData, new FileStorageBasic($directory, $filename));
+        $dataExportManager->generateExport();
 
-        $this->assertFileEquals($fileExpected,  $dataExportManager->getFilenameCompletPath());
+        $this->assertFileEquals($fileExpected,  $directory . $filename);
     }
 
     public function test_except_exception()
@@ -44,9 +50,9 @@ class DataExportManagerTest extends TestCase
         $filename = 'test_exception.csv';
         $this->cleanFile($directory, $filename);
         $this->expectException(TypeError::class);
-        $dataExportManager = new DataExportManager([], $directory, $filename);
-        $dataExportManager->generateFile($dataExportManager::CSV_FORMAT);
-        $this->assertFileDoesNotExist($dataExportManager->getFilenameCompletPath());
+        $dataExportManager = new DataExportToCsv([], new FileStorageCsv($directory, $filename));
+        $dataExportManager->generateExport();
+        $this->assertFileDoesNotExist($directory . $filename);
     }
 
     private function cleanFile(string $directory, string $filename): void
